@@ -263,9 +263,73 @@ const completeRide = async (req, res) => {
   }
 };
 
+
+
+const getMyRides = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      firebaseUid: req.user.uid,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const rides = await Ride.find({
+      riderId: user._id,
+    })
+      .populate("driverId")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: rides.length,
+      rides,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getDriverRides = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      firebaseUid: req.user.uid,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const rides = await Ride.find({
+      driverId: user._id,
+    })
+      .populate("riderId")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: rides.length,
+      rides,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   requestRide,
   acceptRide,
   startRide,
   completeRide,
+  getMyRides,
+  getDriverRides,
 };

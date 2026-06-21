@@ -16,6 +16,7 @@ const registerUser = async (req, res) => {
       firebaseUid: uid,
       email,
       name: req.body.name,
+      role: re.body.role || "rider"
     });
 
     res.status(201).json(newUser);

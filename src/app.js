@@ -15,9 +15,9 @@ app.get("/", (req, res) => {
     res.send("Server Running");
 });
 
-console.log(userRoutes);
-console.log(rideRoutes);
-console.log(driverRoutes);
+// console.log(userRoutes);
+// console.log(rideRoutes);
+// console.log(driverRoutes);
 
 app.use("/api/users", userRoutes);
 app.use("/api/rides", rideRoutes);

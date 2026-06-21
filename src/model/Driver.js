@@ -17,6 +17,11 @@ const driverSchema = new mongoose.Schema({
     required: true,
   },
 
+  isAvailable: {
+    type: Boolean,
+    default: false,
+  },
+
   location: {
     type: {
       type: String,

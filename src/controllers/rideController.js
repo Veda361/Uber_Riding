@@ -2,6 +2,10 @@ const Ride = require("../model/Ride");
 const User = require("../model/User");
 const Driver = require("../model/Driver");
 const calculateFare = require("../utils/fareCalculator");
+const { connectedUsers } = require("../sockets/socketHandler");
+
+
+
 
 const requestRide = async (req, res) => {
   try {
@@ -26,6 +30,8 @@ const requestRide = async (req, res) => {
     });
 
     const nearbyDrivers = await Driver.find({
+      isAvailable: true,
+
       location: {
         $near: {
           $geometry: {
@@ -39,6 +45,46 @@ const requestRide = async (req, res) => {
         },
       },
     });
+
+    const io = req.app.get("io");
+
+    // Notify only nearby connected drivers
+    for (const driver of nearbyDrivers) {
+      const socketId =
+        connectedUsers[
+          driver.userId.toString()
+        ];
+
+      if (socketId) {
+        io.to(socketId).emit(
+          "new-ride",
+          {
+            rideId: ride._id,
+            pickup,
+            destination,
+          }
+        );
+      }
+    }
+
+    // Auto cancel after 30 sec if nobody accepts
+    setTimeout(async () => {
+      const currentRide =
+        await Ride.findById(ride._id);
+
+      if (
+        currentRide &&
+        currentRide.status === "pending"
+      ) {
+        currentRide.status = "cancelled";
+
+        await currentRide.save();
+
+        console.log(
+          `Ride ${ride._id} cancelled due to timeout`
+        );
+      }
+    }, 30000);
 
     res.status(201).json({
       success: true,
@@ -55,9 +101,13 @@ const requestRide = async (req, res) => {
   }
 };
 
+
+
 const acceptRide = async (req, res) => {
   try {
-    const ride = await Ride.findById(req.params.id);
+    const ride = await Ride.findById(
+      req.params.id
+    );
 
     if (!ride) {
       return res.status(404).json({
@@ -65,9 +115,22 @@ const acceptRide = async (req, res) => {
       });
     }
 
+    // Ride Lock
+    if (ride.status !== "pending") {
+      return res.status(400).json({
+        message: "Ride already accepted",
+      });
+    }
+
     const user = await User.findOne({
       firebaseUid: req.user.uid,
     });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
     const driver = await Driver.findOne({
       userId: user._id,
@@ -79,10 +142,41 @@ const acceptRide = async (req, res) => {
       });
     }
 
+    // Driver already busy?
+    const activeRide =
+      await Ride.findOne({
+        driverId: driver.userId,
+        status: {
+          $in: [
+            "accepted",
+            "in_progress",
+          ],
+        },
+      });
+
+    if (activeRide) {
+      return res.status(400).json({
+        message:
+          "Driver already on another ride",
+      });
+    }
+
     ride.driverId = driver.userId;
     ride.status = "accepted";
 
+    driver.isAvailable = false;
+
+    await driver.save();
     await ride.save();
+
+    const io = req.app.get("io");
+
+    io.to(
+      ride._id.toString()
+    ).emit("ride-accepted", {
+      rideId: ride._id,
+      driverId: driver.userId,
+    });
 
     res.json({
       success: true,
@@ -94,6 +188,9 @@ const acceptRide = async (req, res) => {
     });
   }
 };
+
+
+
 
 const startRide = async (req, res) => {
   try {
@@ -130,14 +227,29 @@ const completeRide = async (req, res) => {
       });
     }
 
-    // Temporary distance in KM
-    // Later replace with Google Maps API distance
     const distance = 8;
 
     ride.fare = calculateFare(distance);
     ride.status = "completed";
 
     await ride.save();
+
+    // Driver becomes available again
+    const driver = await Driver.findOne({
+      userId: ride.driverId,
+    });
+
+    if (driver) {
+      driver.isAvailable = true;
+      await driver.save();
+    }
+
+    const io = req.app.get("io");
+
+    io.emit("ride-completed", {
+      rideId: ride._id,
+      fare: ride.fare,
+    });
 
     res.json({
       success: true,

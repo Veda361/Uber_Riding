@@ -60,4 +60,34 @@ const goOnline = async(req, res)=>{
     }
 };
 
-module.exports = {registerDriver, goOnline,};
+const goOffline = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      firebaseUid: req.user.uid,
+    });
+
+    const driver = await Driver.findOneAndUpdate(
+      {
+        userId: user._id,
+      },
+      {
+        isAvailable: false,
+      },
+      {
+        new: true,
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Driver Offline",
+      driver,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {registerDriver, goOnline, goOffline,};

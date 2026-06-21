@@ -12,6 +12,7 @@ const {
   completeRide,
   getDriverRides,
   getMyRides,
+  getRideLocation,
 } = require("../controllers/rideController");
 
 const { requestRideValidation } = require("../validators/rideValidator");
@@ -27,5 +28,7 @@ router.put("/:id/complete", protect, completeRide);
 router.get("/my-rides", protect, getMyRides);
 
 router.get("/driver/my-rides", protect, getDriverRides);
+
+router.get("/:id/location", protect, getRideLocation);
 
 module.exports = router;

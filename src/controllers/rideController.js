@@ -321,6 +321,31 @@ const getDriverRides = async (req, res) => {
   }
 };
 
+const getRideLocation = async (req, res) => {
+  try {
+    const ride = await Ride.findById(req.params.id);
+
+    if (!ride) {
+      return res.status(404).json({
+        message: "Ride not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      location: {
+        lat: ride.currentLocation?.lat,
+        lng: ride.currentLocation?.lng,
+      },
+      updatedAt: ride.updatedAt,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   requestRide,
   acceptRide,
@@ -328,4 +353,5 @@ module.exports = {
   completeRide,
   getMyRides,
   getDriverRides,
+  getRideLocation,
 };

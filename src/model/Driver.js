@@ -1,22 +1,35 @@
+const mongoose = require("mongoose");
+
 const driverSchema = new mongoose.Schema({
-    userId:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-    },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 
-    vehicleType: String,
-    vehicleNumber: String,
+  vehicleType: {
+    type: String,
+    required: true,
+  },
 
-    location: {
-        type: {
-            type: String,
-            enum: ["point"],
-            default: "point",
-        },
-        coordinates: {
-            type: [Number],
-        },
+  vehicleNumber: {
+    type: String,
+    required: true,
+  },
+
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
     },
+    coordinates: {
+      type: [Number],
+      default: [0, 0],
+    },
+  },
 });
 
-driverSchema.index({location: "2dsphere" });
+driverSchema.index({ location: "2dsphere" });
+
+module.exports = mongoose.model("Driver", driverSchema);

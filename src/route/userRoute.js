@@ -34,7 +34,7 @@ router.get("/create-test-user", async(req, res) => {
 
 */
 
-router.post("/register", protect, registerUser);
+router.post("/registerUser", protect, registerUser);
 router.get("/me", protect, getCurrentUser);
 
 module.exports = router;

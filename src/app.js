@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const userRoutes = require("./route/userRoute");
 const rideRoutes = require("./route/rideRoutes");
+const driverRoutes = require("./route/driverRoutes");
 
 
 const app = express();
@@ -14,7 +15,13 @@ app.get("/", (req, res) => {
     res.send("Server Running");
 });
 
+console.log(userRoutes);
+console.log(rideRoutes);
+console.log(driverRoutes);
+
 app.use("/api/users", userRoutes);
 app.use("/api/rides", rideRoutes);
+app.use("/api/drivers", driverRoutes);
+
 
 module.exports = app;

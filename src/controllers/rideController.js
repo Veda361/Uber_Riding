@@ -1,4 +1,4 @@
-const Ride = require("../models/Ride");
+const Ride = require("../model/Ride");
 const User = require("../model/User");
 
 const requestRide = async (req, res) => {

@@ -9,6 +9,7 @@ const rideRoutes = require("./route/rideRoutes");
 const driverRoutes = require("./route/driverRoutes");
 const reviewRoutes = require("./route/reviewRoutes");
 const notificationRoutes = require("./route/notificationRoutes");
+const paymentRoutes = require("./route/paymentRoute");
 
 const app = express();
 
@@ -44,5 +45,7 @@ app.use("/api/rides", rideRoutes);
 app.use("/api/drivers", driverRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/payments", paymentRoutes);
+
 
 module.exports = app;

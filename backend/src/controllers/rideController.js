@@ -4,6 +4,7 @@ const Driver = require("../model/Driver");
 const calculateFare = require("../utils/fareCalculator");
 const { connectedUsers } = require("../sockets/socketHandler");
 const createNotification = require("../utils/createNotification");
+const { getDistanceAndDuration } = require("../services/osrmService");
 
 const requestRide = async (req, res) => {
   try {
@@ -218,8 +219,14 @@ const completeRide = async (req, res) => {
         message: "Ride not found",
       });
     }
+    const { distance, duration } = await getDistanceAndDuration(
+      ride.pickup,
+      ride.destination,
+    );
 
-    const distance = 8;
+    ride.distance = distance;
+
+    ride.duration = duration;
 
     ride.fare = calculateFare(distance);
     ride.status = "completed";
@@ -252,6 +259,8 @@ const completeRide = async (req, res) => {
     res.json({
       success: true,
       fare: ride.fare,
+      distance: ride.distance,
+      duration: ride.duration,
       ride,
     });
   } catch (error) {

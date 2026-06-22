@@ -36,6 +36,16 @@ const rideSchema = new mongoose.Schema(
       default: 0,
     },
 
+    distance: {
+        type: Number,
+        default: 0
+    },
+
+    duration: {
+        type: Number,
+        default: 0,
+    },
+
     isPaid: {
         type: Boolean,
         default: false,

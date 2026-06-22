@@ -4,7 +4,7 @@ const router = express.Router();
 
 const protect = require("../middlewares/authMiddleware");
 
-const isAdmin = require("middlewares/adminMiddleware");
+const isAdmin = require("../middlewares/adminMiddleware");
 
 const {
     getAdminStats, 
